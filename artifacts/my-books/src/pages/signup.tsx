@@ -123,9 +123,7 @@ export function Signup() {
         {/* Card top bar */}
         <div className="flex items-center justify-between px-5 pt-5 pb-2">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center shadow overflow-hidden flex-shrink-0">
-              <img src={logoUrl} alt="Logo" className="w-9 h-9 object-contain" />
-            </div>
+            <img src={logoUrl} alt="Logo" className="w-12 h-12 object-contain flex-shrink-0" />
             <div className="flex flex-col leading-tight">
               <span className="text-[10px] font-semibold tracking-widest text-gray-300 uppercase">
                 Erbil Refinery / KAR-3
