@@ -6,6 +6,7 @@ import NotFound from "@/pages/not-found";
 
 import { Layout } from "@/components/layout";
 import { Login } from "@/pages/login";
+import { Signup } from "@/pages/signup";
 import { Home } from "@/pages/home";
 import { NewBook } from "@/pages/new-book";
 import { Bookcase } from "@/pages/bookcase";
@@ -20,7 +21,8 @@ function Router() {
   return (
     <Switch>
       <Route path="/login" component={Login} />
-      
+      <Route path="/signup" component={Signup} />
+
       <Route path="/">
         <Layout><Home /></Layout>
       </Route>
@@ -42,7 +44,7 @@ function Router() {
       <Route path="/emp-data">
         <Layout><EmpData /></Layout>
       </Route>
-      
+
       <Route component={NotFound} />
     </Switch>
   );

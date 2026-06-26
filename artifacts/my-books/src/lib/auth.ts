@@ -1,8 +1,14 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, createContext, useContext } from "react";
 
 type AuthUser = {
   username: string;
   mode: "phone" | "pc";
+};
+
+type Account = {
+  username: string;
+  password: string;
+  email: string;
 };
 
 export function useAuth() {
@@ -11,10 +17,22 @@ export function useAuth() {
     return stored ? JSON.parse(stored) : null;
   });
 
-  const login = (username: string, mode: "phone" | "pc") => {
+  const login = (username: string, password: string, mode: "phone" | "pc"): boolean => {
+    const accounts: Account[] = JSON.parse(localStorage.getItem("accounts") || "[]");
+    const found = accounts.find((a) => a.username === username && a.password === password);
+    if (!found && accounts.length > 0) return false;
     const u = { username, mode };
     localStorage.setItem("auth_user", JSON.stringify(u));
     setUser(u);
+    return true;
+  };
+
+  const signup = (username: string, email: string, password: string): boolean => {
+    const accounts: Account[] = JSON.parse(localStorage.getItem("accounts") || "[]");
+    if (accounts.find((a) => a.username === username)) return false;
+    accounts.push({ username, email, password });
+    localStorage.setItem("accounts", JSON.stringify(accounts));
+    return true;
   };
 
   const logout = () => {
@@ -22,7 +40,7 @@ export function useAuth() {
     setUser(null);
   };
 
-  return { user, login, logout };
+  return { user, login, logout, signup };
 }
 
 export function useTheme() {
@@ -40,4 +58,17 @@ export function useTheme() {
   const toggleTheme = () => setTheme((t) => (t === "dark" ? "light" : "dark"));
 
   return { theme, toggleTheme };
+}
+
+export function useLanguage() {
+  const [lang, setLang] = useState<"en" | "ar">(() => {
+    return (localStorage.getItem("lang") as "en" | "ar") || "en";
+  });
+
+  const switchLang = (l: "en" | "ar") => {
+    localStorage.setItem("lang", l);
+    setLang(l);
+  };
+
+  return { lang, switchLang };
 }
