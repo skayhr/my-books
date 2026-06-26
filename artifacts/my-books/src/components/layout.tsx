@@ -1,7 +1,8 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Link, useLocation } from "wouter";
 import { Menu, Globe, Sun, Moon, LogOut, Check } from "lucide-react";
-import { useAuth, useTheme, useLanguage } from "@/lib/auth";
+import { useAuth } from "@/lib/auth";
+import { useAppContext } from "@/lib/app-context";
 import logoUrl from "@assets/logo_1782493103781.png";
 
 interface LayoutProps {
@@ -11,8 +12,7 @@ interface LayoutProps {
 export function Layout({ children }: LayoutProps) {
   const { user, logout } = useAuth();
   const [location, setLocation] = useLocation();
-  const { theme, toggleTheme } = useTheme();
-  const { lang, switchLang } = useLanguage();
+  const { theme, toggleTheme, lang, switchLang } = useAppContext();
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -40,20 +40,17 @@ export function Layout({ children }: LayoutProps) {
   ];
 
   return (
-    <div
-      className="min-h-screen flex flex-col w-full text-white"
-      style={{ background: "#0d1b2e" }}
-    >
+    <div className="min-h-screen flex flex-col w-full bg-background text-foreground transition-colors duration-300">
       {user && (
         <header
-          className="h-16 flex items-center justify-between px-6 shrink-0 shadow-md"
+          className="h-16 flex items-center justify-between px-6 shrink-0 shadow-md relative"
           style={{
             background: "linear-gradient(to right, #0d1b2e 0%, #0f2236 50%, #3d0f1a 100%)",
             borderBottom: "1px solid rgba(255,255,255,0.06)",
           }}
         >
           {/* Logo */}
-          <div className="flex items-center gap-3 flex-shrink-0">
+          <div className="flex items-center gap-3 flex-shrink-0 z-10">
             <img src={logoUrl} alt="Logo" className="w-11 h-11 object-contain" />
             <div className="flex flex-col leading-tight">
               <span className="text-[10px] font-semibold tracking-widest text-gray-400 uppercase">
@@ -63,8 +60,8 @@ export function Layout({ children }: LayoutProps) {
             </div>
           </div>
 
-          {/* Nav — centered */}
-          <nav className="flex items-center gap-1 absolute left-1/2 -translate-x-1/2">
+          {/* Nav — absolutely centered */}
+          <nav className="absolute left-1/2 -translate-x-1/2 flex items-center gap-1">
             {navLinks.map((link) => {
               const isActive =
                 location === link.href ||
@@ -85,19 +82,17 @@ export function Layout({ children }: LayoutProps) {
             })}
           </nav>
 
-          {/* Hamburger menu */}
-          <div className="relative flex-shrink-0" ref={menuRef}>
+          {/* Hamburger */}
+          <div className="relative flex-shrink-0 z-10" ref={menuRef}>
             <button
               type="button"
               onClick={() => setMenuOpen((o) => !o)}
               className="w-10 h-10 rounded-lg flex items-center justify-center transition-all"
               style={{
-                background: menuOpen
-                  ? "rgba(255,255,255,0.15)"
-                  : "rgba(255,255,255,0.08)",
-                border: "1px solid rgba(255,255,255,0.12)",
+                background: menuOpen ? "rgba(255,255,255,0.15)" : "rgba(255,255,255,0.08)",
+                border: "1px solid rgba(255,255,255,0.14)",
               }}
-              aria-label="Settings menu"
+              aria-label="Settings"
             >
               <Menu size={20} className="text-gray-200" />
             </button>
@@ -107,13 +102,13 @@ export function Layout({ children }: LayoutProps) {
                 className="absolute top-12 right-0 z-50 rounded-xl shadow-2xl overflow-hidden min-w-[200px]"
                 style={{
                   background: "linear-gradient(135deg, #0f2236 0%, #1a0d18 100%)",
-                  border: "1px solid rgba(255,255,255,0.12)",
+                  border: "1px solid rgba(255,255,255,0.14)",
                 }}
               >
-                {/* Language section */}
+                {/* Language */}
                 <div className="px-4 py-2 border-b border-white/10">
                   <div className="flex items-center gap-2 text-[11px] text-gray-400 font-semibold uppercase tracking-wider">
-                    <Globe size={13} />
+                    <Globe size={12} />
                     {lang === "ar" ? "اللغة" : "Language"}
                   </div>
                 </div>
@@ -123,7 +118,7 @@ export function Layout({ children }: LayoutProps) {
                   className="w-full flex items-center justify-between px-4 py-2.5 text-sm text-gray-200 hover:bg-white/10 transition-colors"
                 >
                   <span>English</span>
-                  {lang === "en" && <Check size={14} className="text-[#e74c3c]" />}
+                  {lang === "en" && <Check size={13} className="text-[#e74c3c]" />}
                 </button>
                 <button
                   type="button"
@@ -131,10 +126,10 @@ export function Layout({ children }: LayoutProps) {
                   className="w-full flex items-center justify-between px-4 py-2.5 text-sm text-gray-200 hover:bg-white/10 transition-colors"
                 >
                   <span>عربي</span>
-                  {lang === "ar" && <Check size={14} className="text-[#e74c3c]" />}
+                  {lang === "ar" && <Check size={13} className="text-[#e74c3c]" />}
                 </button>
 
-                {/* Theme section */}
+                {/* Theme */}
                 <div className="border-t border-white/10">
                   <button
                     type="button"
@@ -142,15 +137,9 @@ export function Layout({ children }: LayoutProps) {
                     className="w-full flex items-center gap-3 px-4 py-3 text-sm text-gray-200 hover:bg-white/10 transition-colors"
                   >
                     {theme === "dark" ? (
-                      <>
-                        <Sun size={15} className="text-yellow-400" />
-                        <span>{lang === "ar" ? "الوضع الصباحي" : "Light Mode"}</span>
-                      </>
+                      <><Sun size={14} className="text-yellow-400" /><span>{lang === "ar" ? "الوضع الصباحي" : "Light Mode"}</span></>
                     ) : (
-                      <>
-                        <Moon size={15} className="text-blue-400" />
-                        <span>{lang === "ar" ? "الوضع الليلي" : "Dark Mode"}</span>
-                      </>
+                      <><Moon size={14} className="text-blue-400" /><span>{lang === "ar" ? "الوضع الليلي" : "Dark Mode"}</span></>
                     )}
                   </button>
                 </div>
@@ -159,14 +148,10 @@ export function Layout({ children }: LayoutProps) {
                 <div className="border-t border-white/10">
                   <button
                     type="button"
-                    onClick={() => {
-                      setMenuOpen(false);
-                      logout();
-                      setLocation("/login");
-                    }}
+                    onClick={() => { setMenuOpen(false); logout(); setLocation("/login"); }}
                     className="w-full flex items-center gap-3 px-4 py-3 text-sm text-red-400 hover:bg-white/10 transition-colors"
                   >
-                    <LogOut size={15} />
+                    <LogOut size={14} />
                     <span>{lang === "ar" ? "تسجيل الخروج" : "Logout"}</span>
                   </button>
                 </div>

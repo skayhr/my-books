@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
-import { useAuth, useLanguage } from "@/lib/auth";
+import { useAuth } from "@/lib/auth";
+import { useAppContext } from "@/lib/app-context";
 import { useLocation } from "wouter";
 import { User, Lock, Mail, Menu, Globe, Check, ArrowLeft } from "lucide-react";
 import logoUrl from "@assets/logo_1782493103781.png";
@@ -49,7 +50,7 @@ const t = {
 
 export function Signup() {
   const { signup } = useAuth();
-  const { lang, switchLang } = useLanguage();
+  const { lang, switchLang } = useAppContext();
   const [, setLocation] = useLocation();
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
