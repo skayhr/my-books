@@ -1,22 +1,29 @@
 openapi: 3.1.0
 info:
-  # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: My Books - HR Letter Management System
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: letterTypes
+    description: Letter type categories
+  - name: employees
+    description: Employee data management
+  - name: letters
+    description: Official letters/books management
+  - name: stats
+    description: Dashboard statistics
+
 paths:
   /healthz:
     get:
       operationId: healthCheck
       tags: [health]
       summary: Health check
-      description: Returns server health status
       responses:
         "200":
           description: Healthy
@@ -24,13 +31,391 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  /letter-types:
+    get:
+      operationId: getLetterTypes
+      tags: [letterTypes]
+      summary: List all letter types
+      responses:
+        "200":
+          description: List of letter types
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/LetterType"
+    post:
+      operationId: createLetterType
+      tags: [letterTypes]
+      summary: Create a new letter type
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LetterTypeInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LetterType"
+
+  /letter-types/{id}:
+    delete:
+      operationId: deleteLetterType
+      tags: [letterTypes]
+      summary: Delete a letter type
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /employees:
+    get:
+      operationId: getEmployees
+      tags: [employees]
+      summary: List all employees
+      parameters:
+        - name: search
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of employees
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Employee"
+    post:
+      operationId: createEmployee
+      tags: [employees]
+      summary: Create an employee
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EmployeeInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Employee"
+
+  /employees/import:
+    post:
+      operationId: importEmployees
+      tags: [employees]
+      summary: Import employees from JSON array (parsed from Excel)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EmployeeImport"
+      responses:
+        "200":
+          description: Import result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ImportResult"
+
+  /employees/clear:
+    delete:
+      operationId: clearEmployees
+      tags: [employees]
+      summary: Clear all employees
+      responses:
+        "200":
+          description: Cleared
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ClearResult"
+
+  /employees/{employeeId}/lookup:
+    get:
+      operationId: lookupEmployee
+      tags: [employees]
+      summary: Lookup employee by employeeId for autofill
+      parameters:
+        - name: employeeId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Employee data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Employee"
+        "404":
+          description: Not found
+
+  /letters:
+    get:
+      operationId: getLetters
+      tags: [letters]
+      summary: List letters with optional filters
+      parameters:
+        - name: letterTypeId
+          in: query
+          required: false
+          schema:
+            type: integer
+        - name: search
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: dateFrom
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: dateTo
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of letters
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Letter"
+    post:
+      operationId: createLetter
+      tags: [letters]
+      summary: Create a new letter
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LetterInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Letter"
+
+  /letters/{id}:
+    get:
+      operationId: getLetter
+      tags: [letters]
+      summary: Get a single letter
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Letter
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Letter"
+    delete:
+      operationId: deleteLetter
+      tags: [letters]
+      summary: Delete a letter
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /stats:
+    get:
+      operationId: getStats
+      tags: [stats]
+      summary: Get dashboard statistics
+      responses:
+        "200":
+          description: Stats
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Stats"
+
 components:
   schemas:
     HealthStatus:
       type: object
+      required: [status]
       properties:
         status:
           type: string
-      required:
-        - status
 
+    LetterType:
+      type: object
+      required: [id, code, nameAr, nameEn]
+      properties:
+        id:
+          type: integer
+        code:
+          type: string
+        nameAr:
+          type: string
+        nameEn:
+          type: string
+        letterCount:
+          type: integer
+
+    LetterTypeInput:
+      type: object
+      required: [code, nameAr, nameEn]
+      properties:
+        code:
+          type: string
+          minLength: 1
+        nameAr:
+          type: string
+          minLength: 1
+        nameEn:
+          type: string
+          minLength: 1
+
+    Employee:
+      type: object
+      required: [id, employeeId, fullName, jobTitle, department]
+      properties:
+        id:
+          type: integer
+        employeeId:
+          type: string
+        fullName:
+          type: string
+        jobTitle:
+          type: string
+        department:
+          type: string
+
+    EmployeeInput:
+      type: object
+      required: [employeeId, fullName, jobTitle, department]
+      properties:
+        employeeId:
+          type: string
+        fullName:
+          type: string
+        jobTitle:
+          type: string
+        department:
+          type: string
+
+    EmployeeImport:
+      type: object
+      required: [employees]
+      properties:
+        employees:
+          type: array
+          items:
+            $ref: "#/components/schemas/EmployeeInput"
+
+    ImportResult:
+      type: object
+      required: [imported, total]
+      properties:
+        imported:
+          type: integer
+        total:
+          type: integer
+
+    ClearResult:
+      type: object
+      required: [message]
+      properties:
+        message:
+          type: string
+
+    Letter:
+      type: object
+      required: [id, letterTypeId, letterTypeCode, letterTypeNameAr, letterTypeNameEn, employeeId, employeeFullName, jobTitle, department, bookDate, createdAt]
+      properties:
+        id:
+          type: integer
+        letterTypeId:
+          type: integer
+        letterTypeCode:
+          type: string
+        letterTypeNameAr:
+          type: string
+        letterTypeNameEn:
+          type: string
+        employeeId:
+          type: string
+        employeeFullName:
+          type: string
+        jobTitle:
+          type: string
+        department:
+          type: string
+        bookDate:
+          type: string
+        pdfUrl:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+
+    LetterInput:
+      type: object
+      required: [letterTypeId, employeeId, employeeFullName, jobTitle, department, bookDate]
+      properties:
+        letterTypeId:
+          type: integer
+        employeeId:
+          type: string
+        employeeFullName:
+          type: string
+        jobTitle:
+          type: string
+        department:
+          type: string
+        bookDate:
+          type: string
+        pdfUrl:
+          type: ["string", "null"]
+
+    Stats:
+      type: object
+      required: [totalEmployees, totalTypes, totalDepartments, totalLetters]
+      properties:
+        totalEmployees:
+          type: integer
+        totalTypes:
+          type: integer
+        totalDepartments:
+          type: integer
+        totalLetters:
+          type: integer
