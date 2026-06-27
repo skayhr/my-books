@@ -1,7 +1,7 @@
 import React, { useState, useRef } from "react";
 import { useGetLetters, useGetLetterTypes, useGetStats } from "@workspace/api-client-react";
 import { Search, Printer, ChevronDown, Eraser, FileText, Users, Building2, BookOpen } from "lucide-react";
-import logoUrl from "@assets/logo_1782493103781.png";
+import logoUrl from "@assets/image_1782568301631.png";
 import { useAppContext } from "@/lib/app-context";
 
 // ─── helpers ────────────────────────────────────────────────────────────────

@@ -3,7 +3,7 @@ import { Link, useLocation } from "wouter";
 import { Menu, Globe, Sun, Moon, LogOut, Check } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { useAppContext } from "@/lib/app-context";
-import logoUrl from "@assets/logo_1782493103781.png";
+import logoUrl from "@assets/image_1782568301631.png";
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -45,8 +45,8 @@ export function Layout({ children }: LayoutProps) {
         <header
           className="h-16 flex items-center justify-between px-6 shrink-0 shadow-md relative"
           style={{
-            background: "linear-gradient(to right, #0d1b2e 0%, #0f2236 50%, #3d0f1a 100%)",
-            borderBottom: "1px solid rgba(255,255,255,0.06)",
+            background: "linear-gradient(to right, #182D5C 0%, #182D5C 55%, #7A3234 100%)",
+            borderBottom: "none",
           }}
         >
           {/* Logo */}

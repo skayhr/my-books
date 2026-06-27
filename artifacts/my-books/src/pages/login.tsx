@@ -3,7 +3,7 @@ import { useAuth } from "@/lib/auth";
 import { useAppContext } from "@/lib/app-context";
 import { useLocation } from "wouter";
 import { User, Lock, Phone, Monitor, Menu, Globe, Check } from "lucide-react";
-import logoUrl from "@assets/logo_1782493103781.png";
+import logoUrl from "@assets/image_1782568301631.png";
 
 const t = {
   en: {
