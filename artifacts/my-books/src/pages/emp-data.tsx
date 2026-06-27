@@ -41,31 +41,66 @@ export function EmpData() {
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+
     const reader = new FileReader();
     reader.onload = (event) => {
       try {
-        const workbook = XLSX.read(event.target?.result, { type: "binary" });
+        const data = new Uint8Array(event.target?.result as ArrayBuffer);
+        const workbook = XLSX.read(data, { type: "array" });
         const worksheet = workbook.Sheets[workbook.SheetNames[0]];
-        const jsonData = XLSX.utils.sheet_to_json(worksheet);
-        const mapped = (jsonData as any[]).map((row) => ({
-          employeeId: String(row.employeeId || row["Employee ID"] || row.ID || ""),
-          fullName: String(row.fullName || row["Full Name"] || row.Name || ""),
-          jobTitle: String(row.jobTitle || row["Job Title"] || row.Title || ""),
-          department: String(row.department || row.Department || ""),
-        })).filter((e) => e.employeeId && e.fullName);
+        const jsonData = XLSX.utils.sheet_to_json(worksheet, { defval: "" }) as Record<string, unknown>[];
 
-        if (!mapped.length) {
-          toast({ title: lang === "ar" ? "لا توجد بيانات صالحة" : "No valid data found", variant: "destructive" });
+        if (!jsonData.length) {
+          toast({ title: lang === "ar" ? "الملف فارغ" : "File is empty", variant: "destructive" });
           return;
         }
+
+        // Build a case-insensitive header lookup from the first row
+        const findCol = (row: Record<string, unknown>, ...candidates: string[]): string => {
+          const keys = Object.keys(row);
+          for (const c of candidates) {
+            const found = keys.find((k) => k.trim().toLowerCase() === c.toLowerCase());
+            if (found !== undefined && row[found] !== undefined && row[found] !== "") {
+              return String(row[found]);
+            }
+          }
+          // Last resort: try substring match
+          for (const c of candidates) {
+            const found = keys.find((k) =>
+              k.trim().toLowerCase().includes(c.toLowerCase()) ||
+              c.toLowerCase().includes(k.trim().toLowerCase())
+            );
+            if (found !== undefined) return String(row[found] ?? "");
+          }
+          return "";
+        };
+
+        const mapped = jsonData.map((row) => ({
+          employeeId: findCol(row, "employeeid", "employee id", "employee_id", "id", "emp id", "empid", "رقم الموظف", "الرقم"),
+          fullName: findCol(row, "fullname", "full name", "full_name", "name", "employee name", "employeename", "الاسم", "الاسم الكامل"),
+          jobTitle: findCol(row, "jobtitle", "job title", "job_title", "title", "position", "المسمى", "المسمى الوظيفي") || "",
+          department: findCol(row, "department", "dept", "القسم", "الدائرة") || "",
+        })).filter((emp) => emp.employeeId.trim() !== "" && emp.fullName.trim() !== "");
+
+        if (!mapped.length) {
+          toast({
+            title: lang === "ar"
+              ? "لم يتم العثور على بيانات صالحة. تأكد من وجود أعمدة: رقم الموظف، الاسم"
+              : "No valid rows found. Ensure columns: Employee ID, Full Name",
+            variant: "destructive",
+          });
+          return;
+        }
+
         importEmployees.mutate({ data: { employees: mapped } });
-      } catch {
+      } catch (err) {
+        console.error("Excel parse error:", err);
         toast({ title: lang === "ar" ? "خطأ في قراءة الملف" : "Error reading file", variant: "destructive" });
       } finally {
         if (fileInputRef.current) fileInputRef.current.value = "";
       }
     };
-    reader.readAsBinaryString(file);
+    reader.readAsArrayBuffer(file);
   };
 
   const thCls = "py-3 px-4 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider";
