@@ -51,7 +51,14 @@ export function Layout({ children }: LayoutProps) {
         >
           {/* Logo */}
           <div className="flex items-center gap-3 flex-shrink-0 z-10">
-            <img src={logoUrl} alt="Logo" className="w-11 h-11 object-contain" />
+            <div className="relative flex items-center justify-center w-14 h-14">
+              {/* white circle — smaller than logo, hidden behind it to tint K white */}
+              <div
+                className="absolute rounded-full"
+                style={{ width: "36px", height: "36px", background: "#ffffff", zIndex: 0 }}
+              />
+              <img src={logoUrl} alt="Logo" className="w-14 h-14 object-contain relative" style={{ zIndex: 1 }} />
+            </div>
             <div className="flex flex-col leading-tight">
               <span className="text-[10px] font-semibold tracking-widest text-gray-400 uppercase">
                 Erbil Refinery / KAR-3
