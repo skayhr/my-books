@@ -180,7 +180,7 @@ export function NewBook() {
                       <option value=""></option>
                       {letterTypes?.map((type) => (
                         <option key={type.id} value={type.id}>
-                          {type.nameEn}
+                          {type.code} — {lang === "ar" ? type.nameAr : type.nameEn}
                         </option>
                       ))}
                     </select>

@@ -20,6 +20,7 @@ export function ManageTypes() {
   const isRtl = lang === "ar";
 
   const [formData, setFormData] = useState({ code: "", nameAr: "", nameEn: "" });
+  const [listOpen, setListOpen] = useState(false);
 
   const createType = useCreateLetterType({
     mutation: {
@@ -187,26 +188,38 @@ export function ManageTypes() {
 
             {/* Right: existing types list */}
             <div className="flex-1 flex flex-col px-5 pb-5 overflow-hidden">
-              <div className="flex flex-col gap-2 pt-1 mb-3">
+              <div className="flex flex-col gap-2 pt-1 mb-2">
                 <label className="text-xs text-muted-foreground font-medium">
                   {lang === "ar" ? "نوع الخطاب:" : "Letter Type:"}
                 </label>
-                {/* Dropdown placeholder */}
+                {/* Dropdown toggle — click to expand/collapse the list */}
                 <div
-                  className="flex items-center justify-between px-3 py-2.5 rounded-lg text-sm cursor-pointer"
+                  className="flex items-center justify-between px-3 py-2.5 rounded-lg text-sm cursor-pointer select-none"
                   style={
                     isDark
                       ? { background: "#0d1f38", border: "1px solid #1e3a5a" }
                       : { background: "#f8fafc", border: "1px solid #e2e8f0" }
                   }
+                  onClick={() => setListOpen((v) => !v)}
                 >
-                  <span className="text-muted-foreground text-sm"></span>
-                  <ChevronDown size={14} className="text-muted-foreground" />
+                  <span className="text-muted-foreground text-sm">
+                    {listOpen
+                      ? (lang === "ar" ? `${types?.length ?? 0} نوع مضاف` : `${types?.length ?? 0} type(s) added`)
+                      : (lang === "ar" ? "انقر لعرض الأنواع المضافة" : "Click to view added types")}
+                  </span>
+                  <ChevronDown
+                    size={14}
+                    className="text-muted-foreground transition-transform duration-200"
+                    style={{ transform: listOpen ? "rotate(180deg)" : "rotate(0deg)" }}
+                  />
                 </div>
               </div>
 
-              {/* Types list — scrollable */}
-              <div className="flex-1 overflow-y-auto flex flex-col gap-1">
+              {/* Types list — scrollable, toggled by dropdown */}
+              <div
+                className="flex-1 overflow-y-auto flex flex-col gap-1 transition-all"
+                style={{ display: listOpen ? "flex" : "none" }}
+              >
                 {isLoading ? (
                   <p className="text-sm text-muted-foreground text-center py-8">Loading...</p>
                 ) : types?.length === 0 ? (
@@ -247,6 +260,17 @@ export function ManageTypes() {
                   ))
                 )}
               </div>
+
+              {/* When list is closed, show a hint */}
+              {!listOpen && (
+                <div className="flex-1 flex items-center justify-center">
+                  <p className="text-xs text-muted-foreground text-center">
+                    {lang === "ar"
+                      ? "أضف نوعاً جديداً من الجانب الأيسر، ثم انقر على القائمة أعلاه للتحقق"
+                      : "Add a new type on the left, then click the dropdown above to verify"}
+                  </p>
+                </div>
+              )}
             </div>
           </div>
         </div>

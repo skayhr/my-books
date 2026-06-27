@@ -60,7 +60,7 @@ export function Bookcase() {
               <span className="font-semibold text-foreground">{labels.sectionTitle}</span>
             </div>
             <Link
-              href="/new-book"
+              href="/bookcase/manage"
               className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-bold text-white transition-all hover:opacity-90 active:scale-[0.98]"
               style={{ background: "#2563eb" }}
             >
