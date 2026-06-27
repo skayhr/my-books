@@ -4,31 +4,21 @@ import { useGetStats } from "@workspace/api-client-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAppContext } from "@/lib/app-context";
 
-const floatKeyframes = `
-@keyframes floatCard0 {
-  0%, 100% { transform: translateY(0px) scale(1); }
-  50% { transform: translateY(-8px) scale(1.03); }
+const hoverKeyframes = `
+@keyframes cardPop {
+  0%   { transform: translateY(0px) scale(1); }
+  40%  { transform: translateY(-10px) scale(1.05); }
+  70%  { transform: translateY(-6px) scale(1.03); }
+  100% { transform: translateY(-8px) scale(1.04); }
 }
-@keyframes floatCard1 {
-  0%, 100% { transform: translateY(0px) scale(1); }
-  50% { transform: translateY(-10px) scale(1.04); }
+.stat-card {
+  transform: translateY(0px) scale(1);
+  transition: box-shadow 0.25s ease;
 }
-@keyframes floatCard2 {
-  0%, 100% { transform: translateY(0px) scale(1); }
-  50% { transform: translateY(-7px) scale(1.03); }
-}
-@keyframes floatCard3 {
-  0%, 100% { transform: translateY(0px) scale(1); }
-  50% { transform: translateY(-9px) scale(1.035); }
+.stat-card:hover {
+  animation: cardPop 0.35s ease forwards;
 }
 `;
-
-const floatAnimations = [
-  "floatCard0 3.6s ease-in-out infinite",
-  "floatCard1 4.1s ease-in-out infinite 0.4s",
-  "floatCard2 3.8s ease-in-out infinite 0.8s",
-  "floatCard3 4.3s ease-in-out infinite 0.2s",
-];
 
 export function StatsCards() {
   const { data: stats, isLoading } = useGetStats();
@@ -74,18 +64,17 @@ export function StatsCards() {
 
   return (
     <>
-      <style>{floatKeyframes}</style>
+      <style>{hoverKeyframes}</style>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 w-full">
         {cards.map((card, i) => (
           <div
             key={i}
-            className="rounded-2xl p-4 flex flex-col gap-2 cursor-default"
-            style={{
-              animation: floatAnimations[i],
-              ...(isDark
+            className="stat-card rounded-2xl p-4 flex flex-col gap-2 cursor-default"
+            style={
+              isDark
                 ? { background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.09)" }
-                : { background: "rgba(255,255,255,0.88)", border: "1px solid rgba(0,0,0,0.07)", boxShadow: `0 4px 18px ${card.color}22` }),
-            }}
+                : { background: "rgba(255,255,255,0.88)", border: "1px solid rgba(0,0,0,0.07)", boxShadow: `0 4px 18px ${card.color}22` }
+            }
           >
             <div
               className="w-9 h-9 rounded-xl flex items-center justify-center"
