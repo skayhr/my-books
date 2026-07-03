@@ -1,4 +1,5 @@
 import pino from "pino";
+import pinoHttp from "pino-http";
 
 const isProduction = process.env.NODE_ENV === "production";
 
@@ -18,3 +19,6 @@ export const logger = pino({
         },
       }),
 });
+
+const createHttpLogger = ((pinoHttp as unknown as { default?: unknown }).default ?? pinoHttp) as any;
+export const httpLogger = createHttpLogger({ logger });

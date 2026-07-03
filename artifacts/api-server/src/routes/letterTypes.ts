@@ -1,7 +1,8 @@
 import { Router } from "express";
 import { db } from "@workspace/db";
-import { letterTypesTable, lettersTable } from "@workspace/db";
-import { eq, count } from "drizzle-orm";
+import { letterTypesTable } from "@workspace/db";
+import { eq } from "drizzle-orm";
+import { lettersTable } from "@workspace/db";
 import {
   CreateLetterTypeBody,
   DeleteLetterTypeParams,
@@ -10,17 +11,8 @@ import {
 const router = Router();
 
 router.get("/", async (req, res) => {
-  const types = await db.select().from(letterTypesTable).orderBy(letterTypesTable.code);
-  const letterCounts = await db
-    .select({ letterTypeId: lettersTable.letterTypeId, cnt: count() })
-    .from(lettersTable)
-    .groupBy(lettersTable.letterTypeId);
-  const countMap = new Map(letterCounts.map((r) => [r.letterTypeId, Number(r.cnt)]));
-  const result = types.map((t) => ({
-    ...t,
-    letterCount: countMap.get(t.id) ?? 0,
-  }));
-  res.json(result);
+  const types = await db.select().from(letterTypesTable);
+  res.json(types);
 });
 
 router.post("/", async (req, res) => {
@@ -29,10 +21,10 @@ router.post("/", async (req, res) => {
     res.status(400).json({ error: "Invalid input" });
     return;
   }
-  const { code, nameAr, nameEn } = parsed.data;
+  const { code, nameAr, nameEn, color } = parsed.data as any;
   const [created] = await db
     .insert(letterTypesTable)
-    .values({ code, nameAr, nameEn })
+    .values({ code, nameAr, nameEn, color })
     .returning();
   res.status(201).json({ ...created, letterCount: 0 });
 });
@@ -43,6 +35,8 @@ router.delete("/:id", async (req, res) => {
     res.status(400).json({ error: "Invalid id" });
     return;
   }
+  // Delete associated letters first, then the type
+  await db.delete(lettersTable).where(eq(lettersTable.letterTypeId, parsed.data.id));
   await db.delete(letterTypesTable).where(eq(letterTypesTable.id, parsed.data.id));
   res.status(204).send();
 });

@@ -9,6 +9,27 @@ export interface HealthStatus {
   status: string;
 }
 
+export interface AuthUser {
+  username?: string;
+  email?: string;
+  fullName?: string;
+  jobTitle?: string;
+  department?: string;
+  employeeId?: string;
+  phone?: string;
+  avatarUrl?: string;
+}
+
+export interface AuthUserUpdate {
+  username?: string;
+  email?: string;
+  fullName?: string;
+  jobTitle?: string;
+  department?: string;
+  phone?: string;
+  avatarUrl?: string;
+}
+
 export interface LetterType {
   id: number;
   code: string;
@@ -87,6 +108,17 @@ export interface Stats {
   totalDepartments: number;
   totalLetters: number;
 }
+
+export type LoginBody = {
+  username: string;
+  password: string;
+};
+
+export type SignupBody = {
+  username: string;
+  email: string;
+  password: string;
+};
 
 export type GetEmployeesParams = {
 search?: string;

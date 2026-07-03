@@ -6,6 +6,8 @@
  * OpenAPI spec version: 0.1.0
  */
 
+export * from './authUser';
+export * from './authUserUpdate';
 export * from './clearResult';
 export * from './employee';
 export * from './employeeImport';
@@ -18,4 +20,6 @@ export * from './letter';
 export * from './letterInput';
 export * from './letterType';
 export * from './letterTypeInput';
+export * from './loginBody';
+export * from './signupBody';
 export * from './stats';

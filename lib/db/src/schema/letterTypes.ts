@@ -7,6 +7,7 @@ export const letterTypesTable = pgTable("letter_types", {
   code: text("code").notNull().unique(),
   nameAr: text("name_ar").notNull(),
   nameEn: text("name_en").notNull(),
+  color: text("color"),
 });
 
 export const insertLetterTypeSchema = createInsertSchema(letterTypesTable).omit({ id: true });

@@ -1,0 +1,24 @@
+[
+  {
+    "username": "testuser",
+    "email": "test@example.com",
+    "password": "testpass",
+    "fullName": "testuser",
+    "jobTitle": "User",
+    "department": "General",
+    "employeeId": "EMP-testuser",
+    "phone": "",
+    "avatarUrl": null
+  },
+  {
+    "username": "arman hussein",
+    "email": "armanbajlan111@gmail.com",
+    "password": "@arman775775",
+    "fullName": "arman hussein",
+    "jobTitle": "User",
+    "department": "General",
+    "employeeId": "EMP-arman hussein",
+    "phone": "",
+    "avatarUrl": null
+  }
+]

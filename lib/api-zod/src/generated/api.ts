@@ -17,6 +17,44 @@ export const HealthCheckResponse = zod.object({
 
 
 /**
+ * @summary Login user
+ */
+export const LoginBody = zod.object({
+  "username": zod.string(),
+  "password": zod.string()
+})
+
+export const LoginResponse = zod.object({
+  "username": zod.string().optional(),
+  "email": zod.string().optional(),
+  "fullName": zod.string().optional(),
+  "jobTitle": zod.string().optional(),
+  "department": zod.string().optional(),
+  "employeeId": zod.string().optional(),
+  "phone": zod.string().optional(),
+  "avatarUrl": zod.string().optional()
+})
+
+
+/**
+ * @summary Signup new user
+ */
+export const SignupBody = zod.object({
+  "username": zod.string(),
+  "email": zod.string(),
+  "password": zod.string()
+})
+
+export const SignupResponse = zod.void()
+
+
+/**
+ * @summary Logout user
+ */
+export const LogoutResponse = zod.unknown()
+
+
+/**
  * @summary List all letter types
  */
 export const GetLetterTypesResponseItem = zod.object({
@@ -137,6 +175,31 @@ export const LookupEmployeeResponse = zod.object({
   "fullName": zod.string(),
   "jobTitle": zod.string(),
   "department": zod.string()
+})
+
+
+/**
+ * @summary Update current user profile
+ */
+export const UpdateUserBody = zod.object({
+  "username": zod.string().optional(),
+  "email": zod.string().optional(),
+  "fullName": zod.string().optional(),
+  "jobTitle": zod.string().optional(),
+  "department": zod.string().optional(),
+  "phone": zod.string().optional(),
+  "avatarUrl": zod.string().optional()
+})
+
+export const UpdateUserResponse = zod.object({
+  "username": zod.string().optional(),
+  "email": zod.string().optional(),
+  "fullName": zod.string().optional(),
+  "jobTitle": zod.string().optional(),
+  "department": zod.string().optional(),
+  "employeeId": zod.string().optional(),
+  "phone": zod.string().optional(),
+  "avatarUrl": zod.string().optional()
 })
 
 

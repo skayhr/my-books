@@ -20,7 +20,11 @@ const hoverKeyframes = `
 }
 `;
 
-export function StatsCards() {
+interface StatsCardsProps {
+  variant?: "classic" | "modern";
+}
+
+export function StatsCards({ variant = "classic" }: StatsCardsProps) {
   const { data: stats, isLoading } = useGetStats();
   const { lang, theme } = useAppContext();
   const isDark = theme === "dark";
@@ -54,45 +58,65 @@ export function StatsCards() {
 
   if (isLoading) {
     return (
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 w-full">
-        {[1, 2, 3, 4].map((i) => (
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 w-full">
+        {[1, 2, 3, 4].map((i: number) => (
           <Skeleton key={i} className="h-24 w-full rounded-2xl" />
         ))}
       </div>
     );
   }
 
+  const css = `${hoverKeyframes}\n${cards
+    .map(
+      (card, i) => `
+.card-${i} { --card-color: ${card.color}; }
+.card-${i} .icon-bg { background: ${card.color}22; }
+.card-${i} .icon-svg { color: ${card.color}; }
+.card-${i} .value { color: ${card.color}; }
+.card-container.light.card-${i} { box-shadow: 0 4px 18px ${card.color}22; }
+`
+    )
+    .join("\n")}`;
+
+  const cardBackground = isDark ? "bg-white/[.07]" : "bg-white/88";
+
   return (
     <>
-      <style>{hoverKeyframes}</style>
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 w-full">
-        {cards.map((card, i) => (
+      <style>{css}</style>
+      <div className="grid w-full grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-4">
+        {cards.map((card, i: number) => (
           <div
             key={i}
-            className="stat-card rounded-2xl p-4 flex flex-col gap-2 cursor-default"
-            style={
-              isDark
-                ? { background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.09)" }
-                : { background: "rgba(255,255,255,0.88)", border: "1px solid rgba(0,0,0,0.07)", boxShadow: `0 4px 18px ${card.color}22` }
-            }
+            className={`stat-card card-container ${isDark ? "dark" : "light"} card-${i} flex h-28 cursor-default flex-col gap-2 rounded-2xl p-4 ${cardBackground} border ${isDark ? "border-slate-800" : "border-slate-200"}`}
           >
-            <div
-              className="w-9 h-9 rounded-xl flex items-center justify-center"
-              style={{ background: `${card.color}22` }}
-            >
-              <card.icon size={18} style={{ color: card.color }} />
-            </div>
-            <div className="flex flex-col gap-0.5">
-              <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider leading-tight">
-                {card.title}
-              </span>
-              <span className="text-2xl font-bold leading-none" style={{ color: card.color }}>
-                {card.value}
-              </span>
-            </div>
+            {variant === "modern" ? (
+              <>
+                <div className="flex items-center gap-3">
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl icon-bg">
+                    <card.icon size={18} className="icon-svg" />
+                  </div>
+                  <span className="text-sm font-bold uppercase tracking-wider text-muted-foreground">
+                    {card.title}
+                  </span>
+                </div>
+                <span className="text-center text-3xl font-bold leading-none value">{card.value}</span>
+              </>
+            ) : (
+              <>
+                <div className="flex h-9 w-9 items-center justify-center rounded-xl icon-bg">
+                  <card.icon size={18} className="icon-svg" />
+                </div>
+                <div className="flex flex-col gap-0.5">
+                  <span className="text-[10px] font-semibold uppercase leading-tight tracking-wider text-muted-foreground">{card.title}</span>
+                  <span className="text-2xl font-bold leading-none value">{card.value}</span>
+                </div>
+              </>
+            )}
           </div>
         ))}
       </div>
     </>
   );
 }
+
+export default StatsCards;

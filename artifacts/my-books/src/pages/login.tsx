@@ -1,8 +1,8 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useAuth } from "@/lib/auth";
 import { useAppContext } from "@/lib/app-context";
-import { useLocation } from "wouter";
-import { User, Lock, Phone, Monitor, Menu, Globe, Check } from "lucide-react";
+import { Link, useLocation } from "wouter";
+import { User, Lock, Eye, EyeOff, Menu, Globe, Check } from "lucide-react";
 import logoUrl from "@assets/image_1782568301631.png";
 
 const t = {
@@ -48,6 +48,7 @@ export function Login() {
   const [, setLocation] = useLocation();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [mode, setMode] = useState<"phone" | "pc">("phone");
   const [error, setError] = useState("");
   const [menuOpen, setMenuOpen] = useState(false);
@@ -66,49 +67,36 @@ export function Login() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
     if (!username || !password) {
       setError(txt.errorEmpty);
       return;
     }
-    const ok = login(username, password, mode);
-    if (ok) {
+    const result = await login(username, password, mode);
+    if (result.ok) {
       setLocation("/");
     } else {
-      setError(txt.errorInvalid);
+      setError(result.error ?? txt.errorInvalid);
     }
   };
 
   return (
     <div
-      className="min-h-screen w-full flex items-center justify-center p-4 relative overflow-hidden"
-      style={{
-        background: "radial-gradient(ellipse at top left, #1a2a4a 0%, #0d1b2e 40%, #4a1020 75%, #2d0c18 100%)",
-      }}
+      className="relative flex min-h-screen w-full items-center justify-center overflow-hidden bg-[radial-gradient(ellipse_at_top_left,#1a2a4a_0%,#0d1b2e_40%,#4a1020_75%,#2d0c18_100%)] p-4"
       dir={isRtl ? "rtl" : "ltr"}
     >
       {/* Subtle radial glow */}
-      <div
-        className="absolute inset-0 pointer-events-none"
-        style={{
-          background: "radial-gradient(ellipse 60% 50% at 75% 60%, rgba(140,20,40,0.35) 0%, transparent 70%)",
-        }}
-      />
+      <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(ellipse_60%_50%_at_75%_60%,rgba(140,20,40,0.35)_0%,transparent_70%)]" />
 
       <div
-        className="w-full max-w-sm relative z-10 rounded-2xl overflow-hidden shadow-2xl"
-        style={{
-          background: "linear-gradient(160deg, rgba(15,34,54,0.92) 0%, rgba(60,16,28,0.88) 100%)",
-          border: "1px solid rgba(255,255,255,0.07)",
-          backdropFilter: "blur(12px)",
-        }}
+        className="relative z-10 w-full max-w-sm overflow-hidden rounded-2xl border border-white/10 bg-linear-to-br from-[rgba(15,34,54,0.92)] to-[rgba(60,16,28,0.88)] shadow-2xl backdrop-blur-xl"
       >
         {/* Card top bar: logo + title + hamburger */}
         <div className="flex items-center justify-between px-5 pt-5 pb-2">
           <div className="flex items-center gap-3">
-            <img src={logoUrl} alt="Logo" className="w-12 h-12 object-contain flex-shrink-0" />
+            <img src={logoUrl} alt="Logo" className="h-12 w-12 shrink-0 object-contain" />
             <div className="flex flex-col leading-tight">
               <span className="text-[10px] font-semibold tracking-widest text-gray-300 uppercase">
                 Erbil Refinery / KAR-3
@@ -122,8 +110,7 @@ export function Login() {
             <button
               type="button"
               onClick={() => setMenuOpen((o) => !o)}
-              className="w-9 h-9 rounded-lg flex items-center justify-center border border-white/10 text-gray-300 hover:text-white hover:border-white/30 transition-all"
-              style={{ background: "rgba(255,255,255,0.06)" }}
+              className="flex h-9 w-9 items-center justify-center rounded-lg border border-white/10 bg-white/5 text-gray-300 transition-all hover:border-white/30 hover:text-white"
               aria-label="Menu"
             >
               <Menu size={18} />
@@ -131,11 +118,7 @@ export function Login() {
 
             {menuOpen && (
               <div
-                className="absolute top-11 right-0 z-50 rounded-xl shadow-xl overflow-hidden min-w-[160px]"
-                style={{
-                  background: "linear-gradient(135deg, #0f2236 0%, #1a0d18 100%)",
-                  border: "1px solid rgba(255,255,255,0.12)",
-                }}
+                className="absolute top-11 right-0 z-50 min-w-40 overflow-hidden rounded-xl border border-white/10 bg-linear-to-br from-[#0f2236] to-[#1a0d18] shadow-xl"
               >
                 <div className="px-3 py-2 border-b border-white/10">
                   <div className="flex items-center gap-2 text-xs text-gray-400 font-medium uppercase tracking-wider">
@@ -170,31 +153,26 @@ export function Login() {
           <h2 className="text-xl font-bold tracking-widest text-white mb-7">{txt.toMyBooks}</h2>
 
           {/* PHONE / PC toggle */}
-          <div
-            className="flex w-auto rounded-full mb-2 p-0.5 gap-0"
-            style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)" }}
-          >
+          <div className="mb-2 flex w-auto gap-0 rounded-full border border-white/10 bg-white/5 p-0.5">
             <button
               type="button"
               onClick={() => setMode("phone")}
-              className="px-7 py-2 rounded-full text-sm font-semibold tracking-wider transition-all"
-              style={
+              className={`px-7 py-2 rounded-full text-sm font-semibold tracking-wider transition-all ${
                 mode === "phone"
-                  ? { background: "#c0392b", color: "#fff", boxShadow: "0 2px 8px rgba(192,57,43,0.4)" }
-                  : { background: "transparent", color: "rgba(200,200,200,0.7)" }
-              }
+                  ? "bg-[#c0392b] text-white shadow-[0_2px_8px_rgba(192,57,43,0.4)]"
+                  : "bg-transparent text-gray-300/70"
+              }`}
             >
               {txt.phone}
             </button>
             <button
               type="button"
               onClick={() => setMode("pc")}
-              className="px-7 py-2 rounded-full text-sm font-semibold tracking-wider transition-all"
-              style={
+              className={`px-7 py-2 rounded-full text-sm font-semibold tracking-wider transition-all ${
                 mode === "pc"
-                  ? { background: "#c0392b", color: "#fff", boxShadow: "0 2px 8px rgba(192,57,43,0.4)" }
-                  : { background: "transparent", color: "rgba(200,200,200,0.7)" }
-              }
+                  ? "bg-[#c0392b] text-white shadow-[0_2px_8px_rgba(192,57,43,0.4)]"
+                  : "bg-transparent text-gray-300/70"
+              }`}
             >
               {txt.pc}
             </button>
@@ -205,7 +183,7 @@ export function Login() {
           <form onSubmit={handleLogin} className="w-full flex flex-col gap-6">
             {/* USERNAME — underline style */}
             <div className="relative flex items-center gap-3 border-b border-white/20 pb-2 focus-within:border-white/50 transition-colors">
-              <User size={17} className="text-gray-400 flex-shrink-0" />
+              <User size={17} className="text-gray-400 shrink-0" />
               <input
                 type="text"
                 placeholder={txt.username}
@@ -218,15 +196,21 @@ export function Login() {
 
             {/* PASSWORD — underline style */}
             <div className="relative flex items-center gap-3 border-b border-white/20 pb-2 focus-within:border-white/50 transition-colors">
-              <Lock size={17} className="text-gray-400 flex-shrink-0" />
+              <Lock size={17} className="text-gray-400 shrink-0" />
               <input
-                type="password"
+                type={showPassword ? "text" : "password"}
                 placeholder={txt.password}
                 className="flex-1 bg-transparent text-sm text-white placeholder:text-gray-500 focus:outline-none tracking-widest uppercase"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 data-testid="input-password"
               />
+              <button type="button" onClick={() => setShowPassword(!showPassword)} className="text-gray-400 hover:text-white">
+                {showPassword
+                  ? <EyeOff size={18} />
+                  : <Eye size={18} />
+                }
+              </button>
             </div>
 
             {error && (
@@ -236,29 +220,23 @@ export function Login() {
             <button
               type="submit"
               data-testid="button-login"
-              className="w-full py-3 rounded-lg font-bold text-white text-base tracking-wider mt-1 transition-all active:scale-[0.98]"
-              style={{
-                background: "linear-gradient(90deg, #c0392b 0%, #922b21 100%)",
-                boxShadow: "0 4px 14px rgba(192,57,43,0.4)",
-              }}
+              className="mt-1 w-full rounded-lg bg-linear-to-r from-[#c0392b] to-[#922b21] py-3 text-base font-bold tracking-wider text-white shadow-[0_4px_14px_rgba(192,57,43,0.4)] transition-all active:scale-[0.98]"
             >
               {txt.login}
             </button>
           </form>
 
           <div className="flex justify-between w-full mt-6 text-sm">
-            <button type="button" className="text-gray-400 hover:text-white transition-colors text-xs">
+            <Link href="/forgot-password" className="text-gray-400 hover:text-white transition-colors text-xs">
               {txt.forgot}
-            </button>
-            <button
-              type="button"
-              onClick={() => setLocation("/signup")}
-              className="font-semibold text-xs transition-colors hover:opacity-80"
-              style={{ color: "#e74c3c" }}
+            </Link>
+            <Link
+              href="/signup"
+              className="text-xs font-semibold text-primary transition-colors hover:opacity-80"
               data-testid="link-signup"
             >
               {txt.signUp}
-            </button>
+            </Link>
           </div>
         </div>
       </div>

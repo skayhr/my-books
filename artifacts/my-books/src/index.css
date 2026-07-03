@@ -122,3 +122,62 @@
     @apply bg-background text-foreground;
   }
 }
+
+input[type="date"],
+input[type="text"],
+input[type="file"] {
+  caret-color: var(--color-foreground);
+}
+
+input[type="date"] {
+  color: inherit;
+}
+
+input.date-input {
+  padding-right: 1rem;
+}
+
+input.date-input::-webkit-clear-button {
+  display: none;
+}
+
+.dark input.date-input {
+  /* keep default browser indicator, no custom icon overlay */
+}
+
+.hide-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.scrollbar-thumb-blue {
+  scrollbar-color: #2563eb transparent;
+  scrollbar-width: thin;
+}
+
+.scrollbar-thumb-blue::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+.scrollbar-thumb-blue::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.scrollbar-thumb-blue::-webkit-scrollbar-thumb {
+  background-color: #2563eb;
+  border-radius: 9999px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+
+.scrollbar-thumb-blue::-webkit-scrollbar-thumb:hover {
+  background-color: #1d4ed8;
+}
+
+.scrollbar-thumb-blue::-webkit-scrollbar-corner {
+  background: transparent;
+}

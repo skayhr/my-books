@@ -9,6 +9,8 @@ servers:
 tags:
   - name: health
     description: Health operations
+  - name: auth
+    description: Authentication and user management
   - name: letterTypes
     description: Letter type categories
   - name: employees
@@ -31,6 +33,56 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  /auth/login:
+    post:
+      operationId: login
+      summary: Login user
+      tags: [auth]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [username, password]
+              properties:
+                username: { type: string }
+                password: { type: string }
+      responses:
+        '200':
+          description: Successfully logged in
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthUser'
+
+  /auth/signup:
+    post:
+      operationId: signup
+      summary: Signup new user
+      tags: [auth]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [username, email, password]
+              properties:
+                username: { type: string }
+                email: { type: string }
+                password: { type: string }
+      responses:
+        '201':
+          description: User created
+
+  /auth/logout:
+    post:
+      operationId: logout
+      summary: Logout user
+      tags: [auth]
+      responses:
+        '200':
+          description: Successfully logged out
 
   /letter-types:
     get:
@@ -170,6 +222,24 @@ paths:
         "404":
           description: Not found
 
+  /users/me:
+    put:
+      operationId: updateUser
+      summary: Update current user profile
+      tags: [auth]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AuthUserUpdate'
+      responses:
+        '200':
+          description: User updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthUser'
+
   /letters:
     get:
       operationId: getLetters
@@ -276,6 +346,37 @@ components:
       properties:
         status:
           type: string
+
+    AuthUser:
+      type: object
+      properties:
+        username:
+          type: string
+        email:
+          type: string
+        fullName:
+          type: string
+        jobTitle:
+          type: string
+        department:
+          type: string
+        employeeId:
+          type: string
+        phone:
+          type: string
+        avatarUrl:
+          type: string
+
+    AuthUserUpdate:
+      type: object
+      properties:
+        username: { type: string }
+        email: { type: string }
+        fullName: { type: string }
+        jobTitle: { type: string }
+        department: { type: string }
+        phone: { type: string }
+        avatarUrl: { type: string }
 
     LetterType:
       type: object

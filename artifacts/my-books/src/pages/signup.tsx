@@ -74,7 +74,7 @@ export function Signup() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
     if (!username || !email || !password || !confirm) {
@@ -89,7 +89,7 @@ export function Signup() {
       setError(txt.errorMatch);
       return;
     }
-    const ok = signup(username, email, password);
+    const ok = await signup(username, email, password);
     if (!ok) {
       setError(txt.errorUserExists);
       return;
@@ -100,31 +100,20 @@ export function Signup() {
 
   return (
     <div
-      className="min-h-screen w-full flex items-center justify-center p-4 relative overflow-hidden"
-      style={{
-        background: "radial-gradient(ellipse at top left, #1a2a4a 0%, #0d1b2e 40%, #4a1020 75%, #2d0c18 100%)",
-      }}
+      className="relative flex min-h-screen w-full items-center justify-center overflow-hidden bg-[radial-gradient(ellipse_at_top_left,#1a2a4a_0%,#0d1b2e_40%,#4a1020_75%,#2d0c18_100%)] p-4"
       dir={isRtl ? "rtl" : "ltr"}
     >
       <div
-        className="absolute inset-0 pointer-events-none"
-        style={{
-          background: "radial-gradient(ellipse 60% 50% at 75% 60%, rgba(140,20,40,0.35) 0%, transparent 70%)",
-        }}
+        className="absolute inset-0 pointer-events-none bg-[radial-gradient(ellipse_60%_50%_at_75%_60%,rgba(140,20,40,0.35)_0%,transparent_70%)]"
       />
 
       <div
-        className="w-full max-w-sm relative z-10 rounded-2xl overflow-hidden shadow-2xl"
-        style={{
-          background: "linear-gradient(160deg, rgba(15,34,54,0.92) 0%, rgba(60,16,28,0.88) 100%)",
-          border: "1px solid rgba(255,255,255,0.07)",
-          backdropFilter: "blur(12px)",
-        }}
+        className="relative z-10 w-full max-w-sm overflow-hidden rounded-2xl border border-white/10 bg-linear-to-br from-[rgba(15,34,54,0.92)] to-[rgba(60,16,28,0.88)] shadow-2xl backdrop-blur-xl"
       >
         {/* Card top bar */}
         <div className="flex items-center justify-between px-5 pt-5 pb-2">
           <div className="flex items-center gap-3">
-            <img src={logoUrl} alt="Logo" className="w-12 h-12 object-contain flex-shrink-0" />
+            <img src={logoUrl} alt="Logo" className="h-12 w-12 shrink-0 object-contain" />
             <div className="flex flex-col leading-tight">
               <span className="text-[10px] font-semibold tracking-widest text-gray-300 uppercase">
                 Erbil Refinery / KAR-3
@@ -137,8 +126,7 @@ export function Signup() {
             <button
               type="button"
               onClick={() => setMenuOpen((o) => !o)}
-              className="w-9 h-9 rounded-lg flex items-center justify-center border border-white/10 text-gray-300 hover:text-white hover:border-white/30 transition-all"
-              style={{ background: "rgba(255,255,255,0.06)" }}
+              className="flex h-9 w-9 items-center justify-center rounded-lg border border-white/10 bg-white/5 text-gray-300 transition-all hover:border-white/30 hover:text-white"
               aria-label="Menu"
             >
               <Menu size={18} />
@@ -146,11 +134,7 @@ export function Signup() {
 
             {menuOpen && (
               <div
-                className="absolute top-11 right-0 z-50 rounded-xl shadow-xl overflow-hidden min-w-[160px]"
-                style={{
-                  background: "linear-gradient(135deg, #0f2236 0%, #1a0d18 100%)",
-                  border: "1px solid rgba(255,255,255,0.12)",
-                }}
+                className="absolute top-11 right-0 z-50 min-w-40 overflow-hidden rounded-xl border border-white/10 bg-linear-to-br from-[#0f2236] to-[#1a0d18] shadow-xl"
               >
                 <div className="px-3 py-2 border-b border-white/10">
                   <div className="flex items-center gap-2 text-xs text-gray-400 font-medium uppercase tracking-wider">
@@ -194,7 +178,7 @@ export function Signup() {
           ) : (
             <form onSubmit={handleSubmit} className="w-full flex flex-col gap-5">
               <div className="flex items-center gap-3 border-b border-white/20 pb-2 focus-within:border-white/50 transition-colors">
-                <User size={17} className="text-gray-400 flex-shrink-0" />
+                <User size={17} className="text-gray-400 shrink-0" />
                 <input
                   type="text"
                   placeholder={txt.username}
@@ -206,7 +190,7 @@ export function Signup() {
               </div>
 
               <div className="flex items-center gap-3 border-b border-white/20 pb-2 focus-within:border-white/50 transition-colors">
-                <Mail size={17} className="text-gray-400 flex-shrink-0" />
+                <Mail size={17} className="text-gray-400 shrink-0" />
                 <input
                   type="email"
                   placeholder={txt.email}
@@ -218,7 +202,7 @@ export function Signup() {
               </div>
 
               <div className="flex items-center gap-3 border-b border-white/20 pb-2 focus-within:border-white/50 transition-colors">
-                <Lock size={17} className="text-gray-400 flex-shrink-0" />
+                <Lock size={17} className="text-gray-400 shrink-0" />
                 <input
                   type="password"
                   placeholder={txt.password}
@@ -230,7 +214,7 @@ export function Signup() {
               </div>
 
               <div className="flex items-center gap-3 border-b border-white/20 pb-2 focus-within:border-white/50 transition-colors">
-                <Lock size={17} className="text-gray-400 flex-shrink-0" />
+                <Lock size={17} className="text-gray-400 shrink-0" />
                 <input
                   type="password"
                   placeholder={txt.confirmPassword}
@@ -248,11 +232,7 @@ export function Signup() {
               <button
                 type="submit"
                 data-testid="button-signup"
-                className="w-full py-3 rounded-lg font-bold text-white text-base tracking-wider mt-1 transition-all active:scale-[0.98]"
-                style={{
-                  background: "linear-gradient(90deg, #c0392b 0%, #922b21 100%)",
-                  boxShadow: "0 4px 14px rgba(192,57,43,0.4)",
-                }}
+                className="mt-1 w-full rounded-lg bg-linear-to-r from-[#c0392b] to-[#922b21] py-3 text-base font-bold tracking-wider text-white shadow-[0_4px_14px_rgba(192,57,43,0.4)] transition-all active:scale-[0.98]"
               >
                 {txt.signUp}
               </button>
@@ -264,8 +244,7 @@ export function Signup() {
             <button
               type="button"
               onClick={() => setLocation("/login")}
-              className="font-semibold hover:opacity-80 transition-colors"
-              style={{ color: "#e74c3c" }}
+              className="font-semibold text-[#e74c3c] hover:opacity-80 transition-colors"
             >
               {txt.login}
             </button>

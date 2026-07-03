@@ -6,6 +6,10 @@ import { Search, FileSpreadsheet } from "lucide-react";
 import * as XLSX from "xlsx";
 import { useAppContext } from "@/lib/app-context";
 
+interface ImportResult {
+  imported: number;
+}
+
 export function EmpData() {
   const [search, setSearch] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -19,7 +23,7 @@ export function EmpData() {
 
   const importEmployees = useImportEmployees({
     mutation: {
-      onSuccess: (data) => {
+      onSuccess: (data: ImportResult) => {
         toast({ title: lang === "ar" ? `تم استيراد ${data.imported} موظف` : `Imported ${data.imported} employees` });
         queryClient.invalidateQueries({ queryKey: ["/api/employees"] });
         queryClient.invalidateQueries({ queryKey: ["/api/stats"] });
@@ -55,32 +59,41 @@ export function EmpData() {
           return;
         }
 
-        // Build a case-insensitive header lookup from the first row
-        const findCol = (row: Record<string, unknown>, ...candidates: string[]): string => {
-          const keys = Object.keys(row);
+        // Find the actual header key in the row based on a list of possible names
+        const findHeaderKey = (row: Record<string, unknown>, ...candidates: string[]): string | null => {
+          const rowKeys = Object.keys(row);
           for (const c of candidates) {
-            const found = keys.find((k) => k.trim().toLowerCase() === c.toLowerCase());
-            if (found !== undefined && row[found] !== undefined && row[found] !== "") {
-              return String(row[found]);
-            }
+            const foundKey = rowKeys.find((k) => k.trim().toLowerCase() === c.toLowerCase());
+            if (foundKey) return foundKey;
           }
           // Last resort: try substring match
           for (const c of candidates) {
-            const found = keys.find((k) =>
+            const foundKey = rowKeys.find((k) =>
               k.trim().toLowerCase().includes(c.toLowerCase()) ||
               c.toLowerCase().includes(k.trim().toLowerCase())
             );
-            if (found !== undefined) return String(row[found] ?? "");
+            if (foundKey) return foundKey;
           }
-          return "";
+          return null;
         };
 
+        const firstRow = jsonData[0];
+        const idKey = findHeaderKey(firstRow, "employeeid", "employee id", "employee_id", "id", "emp id", "empid", "رقم الموظف", "الرقم");
+        const nameKey = findHeaderKey(firstRow, "fullname", "full name", "full_name", "name", "employee name", "employeename", "الاسم", "الاسم الكامل");
+        const titleKey = findHeaderKey(firstRow, "jobtitle", "job title", "job_title", "title", "position", "المسمى", "المسمى الوظيفي");
+        const deptKey = findHeaderKey(firstRow, "department", "dept", "القسم", "الدائرة");
+
+        if (!idKey || !nameKey) {
+          toast({ title: lang === "ar" ? "لم يتم العثور على أعمدة ID و Name" : "Could not find ID and Name columns", variant: "destructive" });
+          return;
+        }
+
         const mapped = jsonData.map((row) => ({
-          employeeId: findCol(row, "employeeid", "employee id", "employee_id", "id", "emp id", "empid", "رقم الموظف", "الرقم"),
-          fullName: findCol(row, "fullname", "full name", "full_name", "name", "employee name", "employeename", "الاسم", "الاسم الكامل"),
-          jobTitle: findCol(row, "jobtitle", "job title", "job_title", "title", "position", "المسمى", "المسمى الوظيفي") || "",
-          department: findCol(row, "department", "dept", "القسم", "الدائرة") || "",
-        })).filter((emp) => emp.employeeId.trim() !== "" && emp.fullName.trim() !== "");
+          employeeId: String(row[idKey] ?? "").trim(),
+          fullName: String(row[nameKey] ?? "").trim(),
+          jobTitle: titleKey ? String(row[titleKey] ?? "").trim() : "",
+          department: deptKey ? String(row[deptKey] ?? "").trim() : "",
+        })).filter((emp) => emp.employeeId !== "" && emp.fullName !== "");
 
         if (!mapped.length) {
           toast({
@@ -108,8 +121,7 @@ export function EmpData() {
 
   return (
     <div
-      className="flex flex-col bg-background transition-colors duration-300"
-      style={{ height: "calc(100vh - 64px)" }}
+      className="flex h-[calc(100vh-64px)] flex-col bg-background transition-colors duration-300"
       dir={isRtl ? "rtl" : "ltr"}
     >
       <div className="max-w-5xl w-full mx-auto px-6 py-5 flex flex-col h-full">
@@ -123,12 +135,7 @@ export function EmpData() {
 
         {/* Main card */}
         <div
-          className="flex flex-col flex-1 rounded-2xl shadow-lg overflow-hidden"
-          style={
-            isDark
-              ? { background: "#112240", border: "1px solid #1e3a5a" }
-              : { background: "#ffffff", border: "1px solid #e2e8f0" }
-          }
+          className="flex flex-1 flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-lg dark:border-slate-800 dark:bg-slate-900"
         >
           {/* Toolbar */}
           <div className="flex items-center gap-3 px-5 pt-4 pb-3 shrink-0">
@@ -138,28 +145,29 @@ export function EmpData() {
               className="hidden"
               ref={fileInputRef}
               onChange={handleFileUpload}
+              aria-label={lang === "ar" ? "استيراد ملف Excel" : "Import Excel file"}
             />
             <button
+              type="button"
               onClick={() => fileInputRef.current?.click()}
               disabled={importEmployees.isPending}
-              className="px-4 py-2 rounded-lg text-sm font-bold text-white transition-all hover:opacity-90 disabled:opacity-50"
-              style={{ background: "linear-gradient(to right, #1a56db, #2563eb)" }}
+              className="rounded-lg bg-linear-to-r from-[#1a56db] to-[#2563eb] px-4 py-2 text-sm font-bold text-white transition-all hover:opacity-90 disabled:opacity-50"
             >
               {importEmployees.isPending
                 ? (lang === "ar" ? "جاري الاستيراد..." : "Importing...")
                 : (lang === "ar" ? "استيراد Excel" : "Import Excel")}
             </button>
             <button
+              type="button"
               onClick={() => {
-                if (confirm(lang === "ar" ? "مسح جميع الموظفين؟" : "Clear all employees?")) {
+                if (window.confirm(lang === "ar" ? "هل أنت متأكد من رغبتك في مسح جميع الموظفين؟" : "Are you sure you want to clear all employees?")) {
                   clearEmployees.mutate();
                 }
               }}
               disabled={clearEmployees.isPending}
-              className="px-4 py-2 rounded-lg text-sm font-bold text-white transition-all hover:opacity-90 disabled:opacity-50"
-              style={{ background: "linear-gradient(to right, #3730a3, #7c3aed)" }}
+              className="rounded-lg bg-linear-to-r from-[#3730a3] to-[#7c3aed] px-4 py-2 text-sm font-bold text-white transition-all hover:opacity-90 disabled:opacity-50"
             >
-              {lang === "ar" ? "مسح الجدول" : "Cler Table"}
+              {lang === "ar" ? "مسح الجدول" : "Clear Table"}
             </button>
 
             {/* Search */}
@@ -170,12 +178,7 @@ export function EmpData() {
               <input
                 type="text"
                 placeholder={lang === "ar" ? "ابحث بالرقم أو الاسم أو القسم" : "Search by ID or name or Department"}
-                className="w-full rounded-lg py-2 pl-9 pr-4 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 transition-colors"
-                style={
-                  isDark
-                    ? { background: "#0d1f38", border: "1px solid #1e3a5a", color: "#fff" }
-                    : { background: "#f8fafc", border: "1px solid #e2e8f0", color: "#1e293b" }
-                }
+                className="w-full rounded-lg border border-gray-200 bg-gray-50 py-2 pl-9 pr-4 text-sm text-slate-800 transition-colors focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-slate-800 dark:bg-slate-950 dark:text-white"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 dir={isRtl ? "rtl" : "ltr"}
@@ -186,12 +189,9 @@ export function EmpData() {
           {/* Table — scrollable */}
           <div className="flex-1 overflow-y-auto">
             <table className="w-full text-left">
-              <thead
-                className="sticky top-0 z-10"
-                style={isDark ? { background: "#0d1f38" } : { background: "#f8fafc" }}
-              >
+              <thead className="sticky top-0 z-10 bg-gray-50 dark:bg-slate-950">
                 <tr>
-                  <th className={thCls} style={{ width: "60px" }}>{lang === "ar" ? "رقم" : "No."}</th>
+                  <th className={thCls + " w-15"}>{lang === "ar" ? "رقم" : "No."}</th>
                   <th className={thCls}>{lang === "ar" ? "رقم الموظف" : "Employee ID"}</th>
                   <th className={thCls}>{lang === "ar" ? "الاسم الكامل" : "Employee Full Name"}</th>
                   <th className={thCls}>{lang === "ar" ? "المسمى الوظيفي" : "Job Title"}</th>
@@ -206,15 +206,10 @@ export function EmpData() {
                     </td>
                   </tr>
                 ) : employees && employees.length > 0 ? (
-                  employees.map((emp, i) => (
+                  employees.map((emp: any, i: number) => (
                     <tr
                       key={emp.id}
-                      className="transition-colors"
-                      style={
-                        isDark
-                          ? { borderTop: "1px solid #1a3050" }
-                          : { borderTop: "1px solid #f1f5f9" }
-                      }
+                      className="border-t border-gray-100 transition-colors dark:border-slate-800"
                     >
                       <td className={tdCls + " text-muted-foreground"}>{i + 1}</td>
                       <td className={tdCls + " font-semibold text-blue-400"}>{emp.employeeId}</td>

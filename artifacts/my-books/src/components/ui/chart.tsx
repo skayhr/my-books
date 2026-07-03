@@ -74,29 +74,41 @@ const ChartStyle = ({ id, config }: { id: string; config: ChartConfig }) => {
     return null
   }
 
-  return (
-    <style
-      dangerouslySetInnerHTML={{
-        __html: Object.entries(THEMES)
-          .map(
-            ([theme, prefix]) => `
+  // Build CSS: set --color-<key> variables and map [data-key] selectors to those vars
+  const css = Object.entries(THEMES)
+    .map(([theme, prefix]) => {
+      const vars = colorConfig
+        .map(([key, itemConfig]) => {
+          const color =
+            itemConfig.theme?.[theme as keyof typeof itemConfig.theme] ||
+            itemConfig.color
+          return color ? `  --color-${key}: ${color};` : null
+        })
+        .filter(Boolean)
+        .join("\n")
+
+      const mappings = colorConfig
+        .map(([key]) => {
+          return `  [data-key="${key}"] { --color-bg: var(--color-${key}); --color-border: var(--color-${key}); }`
+        })
+        .join("\n")
+
+      return `
 ${prefix} [data-chart=${id}] {
-${colorConfig
-  .map(([key, itemConfig]) => {
-    const color =
-      itemConfig.theme?.[theme as keyof typeof itemConfig.theme] ||
-      itemConfig.color
-    return color ? `  --color-${key}: ${color};` : null
-  })
-  .join("\n")}
+${vars}
+}
+${prefix} [data-chart=${id}] .indicator { background: var(--color-bg); border-color: var(--color-border); }
+${prefix} [data-chart=${id}] .legend-swatch { background: var(--color-bg); }
+${prefix} [data-chart=${id}] ${"[data-key]"} {
+${mappings}
 }
 `
-          )
-          .join("\n"),
-      }}
-    />
-  )
+    })
+    .join("\n")
+
+  return <style dangerouslySetInnerHTML={{ __html: css }} />
 }
+
 
 const ChartTooltip = RechartsPrimitive.Tooltip
 
@@ -183,7 +195,7 @@ const ChartTooltipContent = React.forwardRef<
       >
         {!nestLabel ? tooltipLabel : null}
         <div className="grid gap-1.5">
-          {payload
+                {payload
             .filter((item) => item.type !== "none")
             .map((item, index) => {
               const key = `${nameKey || item.name || item.dataKey || "value"}`
@@ -207,8 +219,9 @@ const ChartTooltipContent = React.forwardRef<
                       ) : (
                         !hideIndicator && (
                           <div
+                            data-key={key}
                             className={cn(
-                              "shrink-0 rounded-[2px] border-[--color-border] bg-[--color-bg]",
+                              "indicator shrink-0 rounded-[2px] border-[--color-border]",
                               {
                                 "h-2.5 w-2.5": indicator === "dot",
                                 "w-1": indicator === "line",
@@ -217,12 +230,6 @@ const ChartTooltipContent = React.forwardRef<
                                 "my-0.5": nestLabel && indicator === "dashed",
                               }
                             )}
-                            style={
-                              {
-                                "--color-bg": indicatorColor,
-                                "--color-border": indicatorColor,
-                              } as React.CSSProperties
-                            }
                           />
                         )
                       )}
@@ -285,7 +292,7 @@ const ChartLegendContent = React.forwardRef<
           className
         )}
       >
-        {payload
+                {payload
           .filter((item) => item.type !== "none")
           .map((item) => {
             const key = `${nameKey || item.dataKey || "value"}`
@@ -301,12 +308,10 @@ const ChartLegendContent = React.forwardRef<
                 {itemConfig?.icon && !hideIcon ? (
                   <itemConfig.icon />
                 ) : (
-                  <div
-                    className="h-2 w-2 shrink-0 rounded-[2px]"
-                    style={{
-                      backgroundColor: item.color,
-                    }}
-                  />
+                          <div
+                            data-key={key}
+                            className="h-2 w-2 shrink-0 rounded-[2px] legend-swatch"
+                          />
                 )}
                 {itemConfig?.label}
               </div>
